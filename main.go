@@ -20,11 +20,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title Habit Tracker API
-// @version 1.0
-// @description This is an API for a habit tracker app.
-// @host localhost:8080
-// @BasePath /
+//	@title			Habit Tracker API
+//	@version		1.0
+//	@description	This is an API for a habit tracker app.
+//	@host			localhost:8080
+//	@BasePath		/
 
 func main() {
 	client, err := ent.Open("postgres", "postgres://hire:me@localhost:5432/hireme?sslmode=disable")
@@ -54,22 +54,22 @@ func main() {
 		}
 	}
 
-	// @Summary Get all habits
-	// @Produce html
-	// @Success 200 {string} string "HTML page"
-	// @Router / [get]
+	//	@Summary	Get all habits
+	//	@Produce	html
+	//	@Success	200	{string}	string	"HTML page"
+	//	@Router		/ [get]
 	r.GET("/", func(c *gin.Context) {
 		habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
 		renderHabits(c, habits, 0)
 	})
 
-	// @Summary Create a new habit
-	// @Accept application/x-www-form-urlencoded
-	// @Produce html
-	// @Param name formData string true "Name"
-	// @Param description formData string false "Description"
-	// @Success 200 {string} string "HTML page"
-	// @Router /habits [post]
+	//	@Summary	Create a new habit
+	//	@Accept		application/x-www-form-urlencoded
+	//	@Produce	html
+	//	@Param		name		formData	string	true	"Name"
+	//	@Param		description	formData	string	false	"Description"
+	//	@Success	200			{string}	string	"HTML page"
+	//	@Router		/habits [post]
 	r.POST("/habits", func(c *gin.Context) {
 		name := c.PostForm("name")
 		desc := c.PostForm("description")
@@ -85,25 +85,25 @@ func main() {
 		renderHabits(c, habits, 0)
 	})
 
-	// @Summary Show edit form for a habit
-	// @Produce html
-	// @Param id path int true "Habit ID"
-	// @Success 200 {string} string "HTML page"
-	// @Router /habits/{id} [get]
+	//	@Summary	Show edit form for a habit
+	//	@Produce	html
+	//	@Param		id	path		int		true	"Habit ID"
+	//	@Success	200	{string}	string	"HTML page"
+	//	@Router		/habits/{id} [get]
 	r.GET("/habits/:id", func(c *gin.Context) {
 		id := toInt(c.Param("id"))
 		habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
 		renderHabits(c, habits, id)
 	})
 
-	// @Summary Update a habit
-	// @Accept application/x-www-form-urlencoded
-	// @Produce html
-	// @Param id path int true "Habit ID"
-	// @Param name formData string true "Name"
-	// @Param description formData string false "Description"
-	// @Success 200 {string} string "HTML page"
-	// @Router /habits/{id} [put]
+	//	@Summary	Update a habit
+	//	@Accept		application/x-www-form-urlencoded
+	//	@Produce	html
+	//	@Param		id			path		int		true	"Habit ID"
+	//	@Param		name		formData	string	true	"Name"
+	//	@Param		description	formData	string	false	"Description"
+	//	@Success	200			{string}	string	"HTML page"
+	//	@Router		/habits/{id} [put]
 	r.PUT("/habits/:id", func(c *gin.Context) {
 		id := toInt(c.Param("id"))
 		name := c.PostForm("name")
@@ -124,11 +124,11 @@ func main() {
 		renderHabits(c, habits, 0)
 	})
 
-	// @Summary Delete a habit
-	// @Produce html
-	// @Param id path int true "Habit ID"
-	// @Success 200 {string} string "HTML page"
-	// @Router /habits/{id} [delete]
+	//	@Summary	Delete a habit
+	//	@Produce	html
+	//	@Param		id	path		int		true	"Habit ID"
+	//	@Success	200	{string}	string	"HTML page"
+	//	@Router		/habits/{id} [delete]
 	r.DELETE("/habits/:id", func(c *gin.Context) {
 		id := toInt(c.Param("id"))
 		client.Habit.DeleteOneID(id).Exec(ctx)
