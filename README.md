@@ -85,6 +85,7 @@ Explore, test, and play with the API right from your browser!
 - HTML templates live in `/templates`
 - Swagger docs generated with [swag](https://github.com/swaggo/swag) (`swag init`)
 - Edit connection string or ORM schema as needed for your setup
+- Ran into the following issue with [swagger](https://github.com/swaggo/swag/issues/1622), solved by refactoring to use named handlers
 
 
 ---
