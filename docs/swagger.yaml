@@ -5,5 +5,94 @@ info:
   description: This is an API for a habit tracker app.
   title: Habit Tracker API
   version: "1.0"
-paths: {}
+paths:
+  /:
+    get:
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML page
+          schema:
+            type: string
+      summary: Get all habits
+  /habits:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Description
+        in: formData
+        name: description
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML page
+          schema:
+            type: string
+      summary: Create a new habit
+  /habits/{id}:
+    delete:
+      parameters:
+      - description: Habit ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML page
+          schema:
+            type: string
+      summary: Delete a habit
+    get:
+      parameters:
+      - description: Habit ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML page
+          schema:
+            type: string
+      summary: Show edit form for a habit
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Habit ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Description
+        in: formData
+        name: description
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML page
+          schema:
+            type: string
+      summary: Update a habit
 swagger: "2.0"
