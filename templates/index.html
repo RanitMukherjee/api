@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habits Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-2xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6 text-blue-700">Habits Tracker</h1>
+        <!-- Add Habit Form -->
+        <form class="flex flex-col sm:flex-row gap-2 mb-6"
+              method="post"
+              hx-post="/habits"
+              hx-target="#habits-table"
+              hx-swap="outerHTML">
+            <input type="text" name="name" placeholder="Habit name" required class="border rounded px-3 py-2 flex-1" />
+            <input type="text" name="description" placeholder="Description" class="border rounded px-3 py-2 flex-1" />
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Habit</button>
+        </form>
+        <!-- Habits Table -->
+        <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded shadow">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 text-left font-semibold">Habit</th>
+                    <th class="py-2 px-4 text-left font-semibold">Description</th>
+                    <th class="py-2 px-4 text-left font-semibold">Created</th>
+                    <th class="py-2 px-4 text-left font-semibold">Actions</th>
+                </tr>
+            </thead>
+            {{template "body.html" .}}
+        </table>
+        </div>
+    </div>
+</body>
+</html>

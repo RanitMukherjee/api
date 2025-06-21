@@ -1,0 +1,9 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  description: This is an API for a habit tracker app.
+  title: Habit Tracker API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
