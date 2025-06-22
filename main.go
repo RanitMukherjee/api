@@ -58,7 +58,7 @@ func main() {
 }
 
 // Helper to render either full page or just the table body for htmx
-func renderHabits(c *gin.Context, habits []*ent.Habit, editID int) {
+var renderHabits = func(c *gin.Context, habits []*ent.Habit, editID int) {
 	isHX := c.GetHeader("HX-Request") == "true"
 	data := gin.H{"habits": habits, "editID": editID}
 	if isHX {
@@ -105,7 +105,11 @@ func CreateHabit(c *gin.Context) {
 // @Success 200 {string} string "HTML page"
 // @Router /habits/{id} [get]
 func ShowEditHabit(c *gin.Context) {
-	id := toInt(c.Param("id"))
+	id, err := toInt(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid habit ID")
+		return
+	}
 	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
 	renderHabits(c, habits, id)
 }
@@ -119,14 +123,18 @@ func ShowEditHabit(c *gin.Context) {
 // @Success 200 {string} string "HTML page"
 // @Router /habits/{id} [put]
 func UpdateHabit(c *gin.Context) {
-	id := toInt(c.Param("id"))
+	id, err := toInt(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid habit ID")
+		return
+	}
 	name := c.PostForm("name")
 	desc := c.PostForm("description")
 	if strings.TrimSpace(name) == "" {
 		c.String(http.StatusBadRequest, "Name required")
 		return
 	}
-	_, err := client.Habit.UpdateOneID(id).
+	_, err = client.Habit.UpdateOneID(id).
 		SetName(name).
 		SetDescription(desc).
 		Save(ctx)
@@ -144,13 +152,16 @@ func UpdateHabit(c *gin.Context) {
 // @Success 200 {string} string "HTML page"
 // @Router /habits/{id} [delete]
 func DeleteHabit(c *gin.Context) {
-	id := toInt(c.Param("id"))
+	id, err := toInt(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid habit ID")
+		return
+	}
 	client.Habit.DeleteOneID(id).Exec(ctx)
 	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
 	renderHabits(c, habits, 0)
 }
 
-func toInt(s string) int {
-	i, _ := strconv.Atoi(s)
-	return i
+func toInt(s string) (int, error) {
+	return strconv.Atoi(s)
 }
