@@ -1,4 +1,4 @@
-A minimalistic, modern API for tracking habits, built with **Go**, **Gin**, **Ent ORM**, and **PostgreSQL**. Features a simple HTML interface (with htmx support) and auto-generated Swagger docs. Perfect for learning, hacking, or as a foundation for your own productivity tools!
+A minimalistic, modern API for tracking habits, built with **Go**, **Gin**, **Ent ORM**, and **PostgreSQL**. Features a simple HTML interface (with htmx support), auto-generated Swagger docs, and a comprehensive test suite. Perfect for learning, hacking, or as a foundation for your own productivity tools!
 
 ---
 
@@ -8,6 +8,7 @@ A minimalistic, modern API for tracking habits, built with **Go**, **Gin**, **En
 - Clean HTML interface (with htmx for snappy UX)
 - RESTful API endpoints
 - Auto-generated Swagger UI (`/swagger/index.html`)
+- **Comprehensive test suite** with >70% code coverage
 - Built with Go, Gin, Ent, PostgreSQL
 
 ---
@@ -42,6 +43,23 @@ go run main.go
 ```
 
 Visit [http://localhost:8080](http://localhost:8080) in your browser.
+
+---
+
+## 🧪 Testing & Coverage
+
+This project includes a thorough suite of unit, API, and integration tests, covering all major and edge-case behaviors:
+
+- **Unit tests** for input validation and handler logic
+- **API endpoint tests** for all CRUD operations and error cases
+- **Integration tests** with a real PostgreSQL database (via Docker Compose)
+
+
+  ![Coverage badge](https://img.shields.io/badge/coverage-72.1%25-bright)
+
+```bash
+go test -cover
+```
 
 ---
 
@@ -86,12 +104,5 @@ Explore, test, and play with the API right from your browser!
 - Swagger docs generated with [swag](https://github.com/swaggo/swag) (`swag init`)
 - Edit connection string or ORM schema as needed for your setup
 - Ran into the following issue with [swagger](https://github.com/swaggo/swag/issues/1622), solved by refactoring to use named handlers
-
-
----
-
-## 📜 License
-
-MIT License. See [LICENSE](LICENSE) for details.
-
----
+- **Tests(Api & Unit)** live in `main_test.go` and cover all endpoints, validation, and error handling while **Integration Test** live in `tests/integration_test.go`
+  
