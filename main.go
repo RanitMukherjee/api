@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"api/ent"
 	"api/ent/habit"
@@ -48,118 +47,99 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Register routes with named handlers
-	r.GET("/", GetHabits)
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
+	r.GET("/habits", GetHabits)
 	r.POST("/habits", CreateHabit)
-	r.GET("/habits/:id", ShowEditHabit)
 	r.PUT("/habits/:id", UpdateHabit)
 	r.DELETE("/habits/:id", DeleteHabit)
 
 	r.Run(":8080")
 }
 
-// Helper to render either full page or just the table body for htmx
-var renderHabits = func(c *gin.Context, habits []*ent.Habit, editID int) {
-	isHX := c.GetHeader("HX-Request") == "true"
-	data := gin.H{"habits": habits, "editID": editID}
-	if isHX {
-		c.HTML(http.StatusOK, "body.html", data)
-	} else {
-		c.HTML(http.StatusOK, "index.html", data)
-	}
-}
-
 // @Summary Get all habits
-// @Produce html
-// @Success 200 {string} string "HTML page"
-// @Router / [get]
+// @Produce json
+// @Success 200 {array} ent.Habit
+// @Router /habits [get]
 func GetHabits(c *gin.Context) {
-	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
-	renderHabits(c, habits, 0)
+	habits, err := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, habits)
 }
 
 // @Summary Create a new habit
-// @Accept application/x-www-form-urlencoded
-// @Produce html
-// @Param name formData string true "Name"
-// @Param description formData string false "Description"
-// @Success 200 {string} string "HTML page"
+// @Accept json
+// @Produce json
+// @Param habit body ent.Habit true "Habit to create"
+// @Success 200 {object} ent.Habit
 // @Router /habits [post]
 func CreateHabit(c *gin.Context) {
-	name := c.PostForm("name")
-	desc := c.PostForm("description")
-	if strings.TrimSpace(name) == "" {
-		c.String(http.StatusBadRequest, "Name required")
+	var newHabit ent.Habit
+	if err := c.ShouldBindJSON(&newHabit); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, _ = client.Habit.Create().
-		SetName(name).
-		SetDescription(desc).
+	h, err := client.Habit.Create().
+		SetName(newHabit.Name).
+		SetDescription(newHabit.Description).
 		Save(ctx)
-	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
-	renderHabits(c, habits, 0)
-}
-
-// @Summary Show edit form for a habit
-// @Produce html
-// @Param id path int true "Habit ID"
-// @Success 200 {string} string "HTML page"
-// @Router /habits/{id} [get]
-func ShowEditHabit(c *gin.Context) {
-	id, err := toInt(c.Param("id"))
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid habit ID")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
-	renderHabits(c, habits, id)
+	c.JSON(http.StatusOK, h)
 }
 
 // @Summary Update a habit
-// @Accept application/x-www-form-urlencoded
-// @Produce html
+// @Accept json
+// @Produce json
 // @Param id path int true "Habit ID"
-// @Param name formData string true "Name"
-// @Param description formData string false "Description"
-// @Success 200 {string} string "HTML page"
+// @Param habit body ent.Habit true "Habit to update"
+// @Success 200 {object} ent.Habit
 // @Router /habits/{id} [put]
 func UpdateHabit(c *gin.Context) {
 	id, err := toInt(c.Param("id"))
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid habit ID")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid habit ID"})
 		return
 	}
-	name := c.PostForm("name")
-	desc := c.PostForm("description")
-	if strings.TrimSpace(name) == "" {
-		c.String(http.StatusBadRequest, "Name required")
+	var updatedHabit ent.Habit
+	if err := c.ShouldBindJSON(&updatedHabit); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err = client.Habit.UpdateOneID(id).
-		SetName(name).
-		SetDescription(desc).
+	h, err := client.Habit.UpdateOneID(id).
+		SetName(updatedHabit.Name).
+		SetDescription(updatedHabit.Description).
 		Save(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Update failed")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
-	renderHabits(c, habits, 0)
+	c.JSON(http.StatusOK, h)
 }
 
 // @Summary Delete a habit
-// @Produce html
+// @Produce json
 // @Param id path int true "Habit ID"
-// @Success 200 {string} string "HTML page"
+// @Success 200 {object} gin.H
 // @Router /habits/{id} [delete]
 func DeleteHabit(c *gin.Context) {
 	id, err := toInt(c.Param("id"))
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid habit ID")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid habit ID"})
 		return
 	}
-	client.Habit.DeleteOneID(id).Exec(ctx)
-	habits, _ := client.Habit.Query().Order(ent.Desc(habit.FieldCreatedAt)).All(ctx)
-	renderHabits(c, habits, 0)
+	err = client.Habit.DeleteOneID(id).Exec(ctx)
+	if err != nil {.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Habit deleted successfully"})
 }
 
 func toInt(s string) (int, error) {
