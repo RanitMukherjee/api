@@ -135,7 +135,7 @@ func DeleteHabit(c *gin.Context) {
 		return
 	}
 	err = client.Habit.DeleteOneID(id).Exec(ctx)
-	if err != nil {.
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
