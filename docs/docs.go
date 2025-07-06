@@ -15,51 +15,48 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/habits": {
             "get": {
                 "produces": [
-                    "text/html"
+                    "application/json"
                 ],
                 "summary": "Get all habits",
                 "responses": {
                     "200": {
-                        "description": "HTML page",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Habit"
+                            }
                         }
                     }
                 }
-            }
-        },
-        "/habits": {
+            },
             "post": {
                 "consumes": [
-                    "application/x-www-form-urlencoded"
+                    "application/json"
                 ],
                 "produces": [
-                    "text/html"
+                    "application/json"
                 ],
                 "summary": "Create a new habit",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Name",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Description",
-                        "name": "description",
-                        "in": "formData"
+                        "description": "Habit to create",
+                        "name": "habit",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.Habit"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "HTML page",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/ent.Habit"
                         }
                     }
                 }
@@ -68,9 +65,9 @@ const docTemplate = `{
         "/habits/{id}": {
             "get": {
                 "produces": [
-                    "text/html"
+                    "application/json"
                 ],
-                "summary": "Show edit form for a habit",
+                "summary": "Get a single habit",
                 "parameters": [
                     {
                         "type": "integer",
@@ -82,19 +79,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "HTML page",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/ent.Habit"
                         }
                     }
                 }
             },
             "put": {
                 "consumes": [
-                    "application/x-www-form-urlencoded"
+                    "application/json"
                 ],
                 "produces": [
-                    "text/html"
+                    "application/json"
                 ],
                 "summary": "Update a habit",
                 "parameters": [
@@ -106,31 +103,27 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Name",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Description",
-                        "name": "description",
-                        "in": "formData"
+                        "description": "Habit to update",
+                        "name": "habit",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.Habit"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "HTML page",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/ent.Habit"
                         }
                     }
                 }
             },
             "delete": {
                 "produces": [
-                    "text/html"
+                    "application/json"
                 ],
                 "summary": "Delete a habit",
                 "parameters": [
@@ -144,11 +137,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "HTML page",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "object"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ent.Habit": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name holds the value of the \"name\" field.",
+                    "type": "string"
                 }
             }
         }

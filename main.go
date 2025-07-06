@@ -52,6 +52,7 @@ func main() {
 	})
 	r.GET("/habits", GetHabits)
 	r.POST("/habits", CreateHabit)
+	r.GET("/habits/:id", GetHabit)
 	r.PUT("/habits/:id", UpdateHabit)
 	r.DELETE("/habits/:id", DeleteHabit)
 
@@ -71,6 +72,25 @@ func GetHabits(c *gin.Context) {
 	c.JSON(http.StatusOK, habits)
 }
 
+// @Summary Get a single habit
+// @Produce json
+// @Param id path int true "Habit ID"
+// @Success 200 {object} ent.Habit
+// @Router /habits/{id} [get]
+func GetHabit(c *gin.Context) {
+	id, err := toInt(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid habit ID"})
+		return
+	}
+	h, err := client.Habit.Get(ctx, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Habit not found"})
+		return
+	}
+	c.JSON(http.StatusOK, h)
+}
+
 // @Summary Create a new habit
 // @Accept json
 // @Produce json
@@ -81,6 +101,10 @@ func CreateHabit(c *gin.Context) {
 	var newHabit ent.Habit
 	if err := c.ShouldBindJSON(&newHabit); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if newHabit.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Name cannot be empty"})
 		return
 	}
 	h, err := client.Habit.Create().
@@ -112,6 +136,10 @@ func UpdateHabit(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if updatedHabit.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Name cannot be empty"})
+		return
+	}
 	h, err := client.Habit.UpdateOneID(id).
 		SetName(updatedHabit.Name).
 		SetDescription(updatedHabit.Description).
@@ -126,7 +154,7 @@ func UpdateHabit(c *gin.Context) {
 // @Summary Delete a habit
 // @Produce json
 // @Param id path int true "Habit ID"
-// @Success 200 {object} gin.H
+// @Success 200 {object} object
 // @Router /habits/{id} [delete]
 func DeleteHabit(c *gin.Context) {
 	id, err := toInt(c.Param("id"))

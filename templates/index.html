@@ -3,7 +3,6 @@
 <head>
     <title>Habits Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-100 min-h-screen" x-data="habitsApp()">
@@ -29,11 +28,20 @@
                 <tbody id="habits-table">
                     <template x-for="habit in habits" :key="habit.id">
                         <tr class="border-b last:border-b-0">
-                            <td class="py-2 px-4" x-text="habit.name"></td>
-                            <td class="py-2 px-4" x-text="habit.description"></td>
+                            <td class="py-2 px-4">
+                                <span x-show="editHabitId !== habit.id" x-text="habit.name"></span>
+                                <input type="text" x-show="editHabitId === habit.id" x-model="editingHabit.name" class="border rounded px-3 py-2 w-full">
+                            </td>
+                            <td class="py-2 px-4">
+                                <span x-show="editHabitId !== habit.id" x-text="habit.description"></span>
+                                <input type="text" x-show="editHabitId === habit.id" x-model="editingHabit.description" class="border rounded px-3 py-2 w-full">
+                            </td>
                             <td class="py-2 px-4" x-text="new Date(habit.created_at).toLocaleDateString()"></td>
                             <td class="py-2 px-4 flex gap-2">
-                                <button @click="deleteHabit(habit.id)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+                                <button x-show="editHabitId !== habit.id" @click="startEditing(habit)" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500">Edit</button>
+                                <button x-show="editHabitId !== habit.id" @click="deleteHabit(habit.id)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+                                <button x-show="editHabitId === habit.id" @click="updateHabit(habit.id)" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Save</button>
+                                <button x-show="editHabitId === habit.id" @click="cancelEditing()" class="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500">Cancel</button>
                             </td>
                         </tr>
                     </template>
@@ -46,17 +54,18 @@
         function habitsApp() {
             return {
                 habits: [],
-                newHabit: {
-                    name: '',
-                    description: ''
-                },
+                newHabit: { name: '', description: '' },
+                editHabitId: null,
+                editingHabit: { name: '', description: '' },
+
                 init() {
                     fetch('/habits')
                         .then(response => response.json())
                         .then(data => {
-                            this.habits = data;
+                            this.habits = data || [];
                         });
                 },
+
                 addHabit() {
                     fetch('/habits', {
                         method: 'POST',
@@ -70,6 +79,31 @@
                         this.newHabit.description = '';
                     });
                 },
+
+                startEditing(habit) {
+                    this.editHabitId = habit.id;
+                    this.editingHabit = { ...habit };
+                },
+
+                cancelEditing() {
+                    this.editHabitId = null;
+                    this.editingHabit = { name: '', description: '' };
+                },
+
+                updateHabit(id) {
+                    fetch(`/habits/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.editingHabit)
+                    })
+                    .then(response => response.json())
+                    .then(updatedHabit => {
+                        const index = this.habits.findIndex(h => h.id === id);
+                        this.habits[index] = updatedHabit;
+                        this.cancelEditing();
+                    });
+                },
+
                 deleteHabit(id) {
                     fetch(`/habits/${id}`, { method: 'DELETE' })
                         .then(() => {
